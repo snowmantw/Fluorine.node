@@ -20,5 +20,8 @@ def build(bld):
     obj.cxxflags = ["-D_FILE_OFFSET_BITS=64", "-D_LARGEFILE_SOURCE"]
 
 def shutdown():
-    if Options.commands['clean']:
-        if exists('../../../build/toy/toy.node'): unlink('../../../build/toy/toy.node')
+    if Options.command['clean']:
+        if exists('toy.node'): unlink('toy.node')
+    else:
+        if exists('../../../build/toy/Release/toy.node') and not exists('toy.node'):
+            symlink('../../../build/toy/Release/toy.node', 'toy.node')
