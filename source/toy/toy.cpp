@@ -15,3 +15,5 @@ extern "C" void init(Handle<Object> target)
 {
     NODE_SET_METHOD(target, "foo", foo);
 }
+
+NODE_MODULE(toy, init);
