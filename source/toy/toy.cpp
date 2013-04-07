@@ -11,9 +11,32 @@ static Handle<Value> foo(const Arguments& args)
     return String::New("H e l l o");
 }
 
-extern "C" void init(Handle<Object> target)
+static Handle<Value> bar(const Arguments& args)
 {
-    NODE_SET_METHOD(target, "foo", foo);
+    // New scope in this function.
+    HandleScope scope;
+
+    if( args.Length() != 2)
+    {
+        ThrowException(Exception::TypeError(String::New("Wrong number of arguments")));
+        return scope.Close(Undefined());
+    }
+
+    if( !args[0]->IsNumber() || !args[1]->IsNumber())
+    {
+        ThrowException(Exception::TypeError(String::New("Wrong arguments")));
+        return scope.Close(Undefined());
+    }
+
+    Local<Number> num = Number::New(args[0]->NumberValue() + args[1]->NumberValue());
+    return scope.Close(num);
 }
 
-NODE_MODULE(toy, init);
+void Init(Handle<Object> exports)
+{
+    exports->Set(String::NewSymbol("foo"), FunctionTemplate::New(foo)->GetFunction());
+    exports->Set(String::NewSymbol("bar"), FunctionTemplate::New(bar)->GetFunction());
+}
+
+// NODE_MODULE is NOT a funcion.
+NODE_MODULE(toy, Init)
