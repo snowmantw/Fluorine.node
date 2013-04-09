@@ -1,7 +1,8 @@
 
 #define BUILDING_NODE_EXTENSION
 
-#include "toy.hpp"
+#include "toy_fluorine.hpp"
+#include "toy_gallium.hpp"
 
 #include <v8.h>
 #include <node.h>
@@ -86,9 +87,36 @@ static Handle<Value> eagle(const Arguments& args)
     return scope.Close(fn);
 }
 
+static Handle<Value> fluorineCreate(const Arguments& args)
+{
+    HandleScope scope;
+    return scope.Close(Fluorine::NewInstance(args));
+}
+
+static Handle<Value> galliumCreate(const Arguments& args)
+{
+    HandleScope scope;
+    return scope.Close(Gallium::NewInstance(args));
+}
+
+// Receive two Gallium object and add their values.
+static Handle<Value> galliumAdd(const Arguments& args)
+{
+    HandleScope scope;
+
+    Gallium* g1 = node::ObjectWrap::Unwrap<Gallium>(args[0]->ToObject());
+    Gallium* g2 = node::ObjectWrap::Unwrap<Gallium>(args[1]->ToObject());
+
+    double sum = g1->Val() + g2->Val();
+
+    return scope.Close(Number::New(sum));
+}
+
 
 void InitAll(Handle<Object> exports)
 {
+    // Register wrapped C++ functions.
+    
     exports->Set(String::NewSymbol("foo"), FunctionTemplate::New(foo)->GetFunction());
     exports->Set(String::NewSymbol("bar"), FunctionTemplate::New(bar)->GetFunction());
     exports->Set(String::NewSymbol("charlie"), FunctionTemplate::New(charlie)->GetFunction());
@@ -96,56 +124,15 @@ void InitAll(Handle<Object> exports)
     exports->Set(String::NewSymbol("eagle"), FunctionTemplate::New(eagle)->GetFunction());
     exports->Set(String::NewSymbol("eagleChild"), FunctionTemplate::New(eagleChild)->GetFunction());
 
-    Fluorine::Init(exports);
-}
-
-//---- Testing C++ Object ----
- 
-Fluorine::Fluorine(){}
-Fluorine::~Fluorine(){}
-
-void Fluorine::Init(Handle<Object> exports)
-{
-    // Prepare constructor template.
-    // JS "new" will invoke the `New` function in Fluorine class.
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-
-    // Function can own ClassName property, even though JS doesn't own class.
-    tpl->SetClassName(String::NewSymbol("Fluorine"));
-
-    // ? Some internal modifications at the instance got instanced ?
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-    // Set prototype of this Function: register prototype functions.
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("plusOne")
-        , FunctionTemplate::New(PlusOne)->GetFunction());
+    Fluorine::Init();
+    exports->Set(String::NewSymbol("fluorineCreate"), FunctionTemplate::New(fluorineCreate)->GetFunction());
     
-    // Wrap the instanceable function's constructor: the `Fluorine::New function`.
-    Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
+    // Beside factory pattern, we export the object itself, too.
+    exports->Set(String::NewSymbol("Fluorine"), Fluorine::constructor);
 
-    // And export constructor as the instanceable function.
-    exports->Set(String::NewSymbol("Fluorine"), constructor);
-}
-
-Handle<Value> Fluorine::New(const Arguments& args)
-{
-    HandleScope scope;
-
-    Fluorine* obj = new Fluorine();
-    obj->counter_ = args[0]->IsUndefined() ? 0 : args[0]->NumberValue();
-    obj->Wrap(args.This());
-
-    return args.This(); 
-}
-
-Handle<Value> Fluorine::PlusOne(const Arguments& args)
-{
-    HandleScope scope;
-
-    Fluorine* obj = ObjectWrap::Unwrap<Fluorine>(args.This());
-    obj->counter_ += 1; 
-
-    return scope.Close(Number::New(obj->counter_));
+    Gallium::Init();
+    exports->Set(String::NewSymbol("galliumCreate"), FunctionTemplate::New(galliumCreate)->GetFunction());
+    exports->Set(String::NewSymbol("galliumAdd"), FunctionTemplate::New(galliumAdd)->GetFunction());
 }
 
 // NODE_MODULE is NOT a funcion.

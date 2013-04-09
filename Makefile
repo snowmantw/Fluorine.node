@@ -5,13 +5,14 @@ CONFIG=configure
 MODULES=toy
 ROOT=$(shell pwd)
 SOURCE=source
+NODEROOT="."
 
 clean:
 	rm -rf $(BUILD)/*
 
 $(MODULES): 
 	cd $(CONFIG)/$@ &&\
-	$(NODE_GYP) configure &&\
+	test $(NODEROOT) == "." && $(NODE_GYP) configure || $(NODE_GYP) --nodedir $(NODEROOT) configure &&\
 	cd build &&\
 	make &&\
 	test ! -e $(ROOT)/$(BUILD)/$@ && mkdir $(ROOT)/$(BUILD)/$@ || : &&\
