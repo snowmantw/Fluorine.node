@@ -2,7 +2,7 @@
 BUILD=build
 NODE_GYP=node-gyp
 CONFIG=configure
-MODULES=toy
+MODULES=toy fluorine
 ROOT=$(shell pwd)
 SOURCE=source
 NODEROOT="."
