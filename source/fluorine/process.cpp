@@ -2,6 +2,7 @@
 #define BUILDING_NODE_EXTENSION
 
 #include "process.hpp"
+#include "utils.hpp"
 
 #include <queue>
 
@@ -34,6 +35,9 @@ void Process::Init()    // -- Don't forget the class name.
     // -- Register functions on the prototype.
     tpl->PrototypeTemplate()->Set(String::NewSymbol("next")
         ,FunctionTemplate::New(Process::Next)->GetFunction() );
+
+    tpl->PrototypeTemplate()->Set(String::NewSymbol("run")
+        ,FunctionTemplate::New(Process::Run)->GetFunction() );
 
     constructor = Persistent<Function>::New(tpl->GetFunction());
 }
@@ -123,15 +127,15 @@ Handle<Value> Process::Run(const Arguments& args)
     HandleScope scope;
 
     Process* process = ObjectWrap::Unwrap<Process>(args.This());
-    process->m_result = Persistent<Handle<Value> >::New(args[0]);
+    process->m_result = args[0];
     Persistent<Function> step = process->m_pqueue->front();
     process->m_pqueue->pop();
 
-    Local<Value> adata = args.Data();
+    vector<Local<Value> >* argv = vectorFromArguments(args);
 
     // Steps should execute under the plain context; 
     // they're expecting become closure already.
-    step->Call(Object::New(), args.Length(), adata );
+    step->Call(Object::New(), args.Length(), &(*argv)[0] );
 
     return scope.Close(Undefined());
 }

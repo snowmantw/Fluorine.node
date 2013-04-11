@@ -32,7 +32,7 @@ private:
     // ----
 
     std::queue<v8::Persistent<v8::Function> >* m_pqueue;
-    v8::Persistent<v8::Handle<v8::Value> > m_result;
+    v8::Handle<v8::Value> m_result;
 };
 
 #endif

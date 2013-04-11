@@ -4,7 +4,10 @@
         {
             "target_name": 'fluorine',
             "cflags":  ["-g"],
-            "sources": ["../../source/fluorine/fluorine.cpp", "../../source/fluorine/process.cpp"]
+            "sources": [ "../../source/fluorine/fluorine.cpp"
+                       , "../../source/fluorine/process.cpp"
+                       , "../../source/fluorine/utils.cpp"
+                       ]
         }
     ]
 }
