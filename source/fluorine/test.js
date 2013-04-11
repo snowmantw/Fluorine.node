@@ -11,3 +11,5 @@ console.log("# Execute one step in the Process instance, with a parameter. The n
 process.run("Hello")
 console.log("# Execute one step of the process with a result from previous step. The next line will be \"World\"")
 process.run("World")
+console.log("# Extract the process' result. The next line will be \"World\"")
+console.log(process.extract())

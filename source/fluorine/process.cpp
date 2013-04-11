@@ -39,6 +39,9 @@ void Process::Init()    // -- Don't forget the class name.
     tpl->PrototypeTemplate()->Set(String::NewSymbol("run")
         ,FunctionTemplate::New(Process::Run)->GetFunction() );
 
+    tpl->PrototypeTemplate()->Set(String::NewSymbol("extract")
+        ,FunctionTemplate::New(Process::Extract)->GetFunction() );
+
     constructor = Persistent<Function>::New(tpl->GetFunction());
 }
 
@@ -127,7 +130,7 @@ Handle<Value> Process::Run(const Arguments& args)
     HandleScope scope;
 
     Process* process = ObjectWrap::Unwrap<Process>(args.This());
-    process->m_result = args[0];
+    process->m_result = Persistent<Value>::New(args[0]);
     Persistent<Function> step = process->m_pqueue->front();
     process->m_pqueue->pop();
 
@@ -138,4 +141,18 @@ Handle<Value> Process::Run(const Arguments& args)
     step->Call(Object::New(), args.Length(), &(*argv)[0] );
 
     return scope.Close(Undefined());
+}
+
+/**
+ * Extract the result of this process.
+ *
+ * @return Object, any type of result.
+ */
+Handle<Value> Process::Extract(const Arguments& args)
+{
+    HandleScope scope;
+
+    Process* process = ObjectWrap::Unwrap<Process>(args.This());
+
+    return scope.Close(process->m_result);
 }
